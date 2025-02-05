@@ -263,8 +263,16 @@
             // Update Prayer Status and Time Remaining
             if (nextPrayerName) {
                 const timeLeft = calculateTimeRemaining(nextPrayerTime);
-                document.getElementById('prayer-status').textContent = `وقت ${nextPrayerName} نزدیکه!`;
-                document.getElementById('time-to-next').textContent = `(${timeLeft.hours} ساعت و ${timeLeft.minutes} دقیقه)`;
+                const totalMinutesLeft = (timeLeft.hours * 60) + timeLeft.minutes; // Calculate total minutes remaining
+
+                document.getElementById('time-to-next').textContent = `تا ${nextPrayerName} ${timeLeft.hours} ساعت و ${timeLeft.minutes} دقیقه باقی مانده!`;
+
+                if (totalMinutesLeft <= 15) {
+                    document.getElementById('prayer-status').textContent = `تا ${nextPrayerName} فقط ${timeLeft.minutes} دقیقه مانده! آماده شوید!`; // "Only X minutes left until prayer, get ready!"
+                } else {
+                    document.getElementById('prayer-status').textContent = `وقت ${nextPrayerName} نزدیکه!`; // "Prayer time is approaching!"
+                }
+
             } else {
                 document.getElementById('prayer-status').textContent = "همه اذان‌ها خونده شد!";
                 document.getElementById('time-to-next').textContent = "";
