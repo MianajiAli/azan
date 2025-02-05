@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>اوقات شرعی میانه</title>
+    <title>اوقات شرعی</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@100..900&display=swap" rel="stylesheet">
@@ -51,30 +51,34 @@
         .prayer-time {
             font-size: 2.5em;
             margin-bottom: 10px;
-            padding: 15px;  /* Added padding for more visual separation */
-            border-radius: 8px; /* Added border-radius for rounded corners */
+            padding: 15px;
+            border-radius: 8px;
             word-break: break-word;
+
+            /* Justify Content */
+            display: flex;
+            justify-content: space-between; /* Distribute space evenly */
+            align-items: center;           /* Vertically center the content */
         }
 
         .prayer-name {
             font-weight: bold;
-            margin-right: 10px;
             color: #007bff;
         }
 
         /* Color coding based on time */
         .past-prayer {
-            background-color: #f9f9f9; /* Light grey */
-            color: #aaa; /* Dimmed text */
+            background-color: #f9f9f9;
+            color: #aaa;
         }
 
         .next-prayer {
-            background-color: #e6f7ff; /* Light blue */
+            background-color: #e6f7ff;
             color: #333;
         }
 
         .current-prayer {
-            background-color: #ffefc6; /* light yellow*/
+            background-color: #ffefc6;
             color: #333;
             font-weight: bold;
         }
@@ -135,8 +139,8 @@
 
     const today = new Date();
     document.getElementById('date-display').textContent = formatDate(today);
-    updateClock();  // Initialize clock
-    setInterval(updateClock, 60000); // Update every minute
+    updateClock();
+    setInterval(updateClock, 60000);
 
     fetch(apiUrl)
         .then(response => response.json())
@@ -156,14 +160,14 @@
             prayerTimesDiv.innerHTML = '';
 
             const now = new Date();
-            const nowTime = now.getHours() * 60 + now.getMinutes(); // Current time in minutes since midnight
-             let nextPrayerFound = false; //flag to find next prayer
+            const nowTime = now.getHours() * 60 + now.getMinutes();
+             let nextPrayerFound = false;
 
             for (const prayer in prayerTimes) {
                 const div = document.createElement('div');
                 div.className = 'prayer-time';
                 const formattedTime = formatTime(prayerTimes[prayer]);
-                div.innerHTML = `<span class="prayer-name">${prayer}:</span> ${formattedTime}`;
+                div.innerHTML = `<span class="prayer-name">${prayer}</span><span>${formattedTime}</span>`;
 
                 const [prayerHours, prayerMinutes] = prayerTimes[prayer].split(':').map(Number);
                 const prayerTimeInMinutes = prayerHours * 60 + prayerMinutes;
