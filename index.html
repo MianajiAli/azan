@@ -51,10 +51,27 @@
             color: #444;
         }
 
-        #date-display, #time-display, #prayer-status {
+        #date-display, #time-display {
             font-size: 2.5em;
             margin-bottom: 15px;
             color: #333;
+        }
+
+        #prayer-status-container {
+            font-size: 2.5em;
+            margin-bottom: 15px;
+            color: #333;
+            display: flex;
+            align-items: center; /* Vertically align status and timer */
+            justify-content: center;
+        }
+
+        #prayer-status {
+            margin-left: 10px;
+        }
+
+        #time-to-next {
+            margin-right: 10px; /* Space between text and number */
         }
 
         .prayer-time {
@@ -70,24 +87,30 @@
 
         .prayer-name {
             font-weight: 700;
-            color: #444; /* Black/Gray for Prayer Names */
+            color: #555; /* Made prayer name gray */
+        }
+
+        /* Specific margin-bottom adjustments */
+        .prayer-time:nth-child(2),  /* طلوع آفتاب */
+        .prayer-time:nth-child(5)   /* غروب آفتاب */ {
+            margin-bottom: 30px;  /* Increased margin */
         }
 
         /* Accessible Color Palette */
         .past-prayer {
-            background-color: #e0e0e0; /* Softer gray */
-            color: #555;          /* More readable dark gray */
+            background-color: #e0e0e0;
+            color: #555;
         }
 
         .next-prayer {
-            background-color: #bbdefb; /* Lighter blue */
-            color: #000; /* Use black for contrast */
-            font-weight: bold;       /* Emphasize the next prayer */
+            background-color: #bbdefb;
+            color: #000;
+            font-weight: bold;
         }
 
         .current-prayer {
-            background-color: #ffcc80; /* Soft orange */
-            color: #000;          /* Black for contrast */
+            background-color: #ffcc80;
+            color: #000;
             font-weight: bolder;
         }
 
@@ -105,7 +128,7 @@
                 font-size: 3em;
             }
 
-            #city-display, #date-display, #time-display, #prayer-status, #time-left {
+            #city-display, #date-display, #time-display, #prayer-status-container {
                 font-size: 2em;
             }
 
@@ -113,16 +136,6 @@
                 font-size: 2.5em;
                 padding: 15px;
             }
-        }
-
-        /* Spacing for Sunrise and Sunset */
-        #prayer-times > div:nth-child(2), /* طلوع آفتاب */
-        #prayer-times > div:nth-child(4)   /* غروب آفتاب */ {
-            margin-bottom: 25px;
-        }
-
-        #time-left{
-           font-size: 2em;
         }
     </style>
 </head>
@@ -133,8 +146,11 @@
     <div id="city-display"></div>
     <div id="date-display"></div>
     <div id="time-display"></div>
-    <div id="prayer-status"></div>
-    <div id="time-left"></div>
+
+    <div id="prayer-status-container">
+        <span id="time-to-next"></span>
+        <span id="prayer-status"></span>
+    </div>
 
     <div id="prayer-times">
       <div id="loading-indicator">در حال بارگذاری...</div>
@@ -154,32 +170,27 @@
         return `${hours}:${minutes}`;
     }
 
+      function calculateTimeRemaining(targetTime) {
+        const [hours, minutes] = targetTime.split(':').map(Number);
+        const now = new Date();
+        const target = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hours, minutes, 0);
+
+        if (target < now) {
+            target.setDate(target.getDate() + 1); // Set to tomorrow if it's in the past
+        }
+
+        const diff = target.getTime() - now.getTime();
+        const hoursLeft = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutesLeft = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+
+        return { hours: hoursLeft, minutes: minutesLeft };
+    }
+
     function updateClock() {
         const now = new Date();
         const hours = String(now.getHours()).padStart(2, '0');
         const minutes = String(now.getMinutes()).padStart(2, '0');
         document.getElementById('time-display').textContent = `ساعت: ${hours}:${minutes}`;
-    }
-
-    function calculateTimeLeft(nextPrayerTime) {
-        const [prayerHours, prayerMinutes] = nextPrayerTime.split(':').map(Number);
-        const now = new Date();
-        const nowHours = now.getHours();
-        const nowMinutes = now.getMinutes();
-
-        let timeLeftHours = prayerHours - nowHours;
-        let timeLeftMinutes = prayerMinutes - nowMinutes;
-
-        if (timeLeftMinutes < 0) {
-            timeLeftMinutes += 60;
-            timeLeftHours--;
-        }
-
-        if (timeLeftHours < 0) {
-            timeLeftHours += 24;
-        }
-
-        return `${timeLeftHours} ساعت و ${timeLeftMinutes} دقیقه`;
     }
 
     const today = new Date();
@@ -208,7 +219,7 @@
             const now = new Date();
             const nowTime = now.getHours() * 60 + now.getMinutes();
             let nextPrayerName = null;
-            let nextPrayerTime = null;
+            let nextPrayerTime = null; // Store the time of the next prayer
             let nextPrayerFound = false;
 
             for (const prayer in prayerTimes) {
@@ -223,28 +234,27 @@
                 if (prayerTimeInMinutes < nowTime) {
                     div.classList.add('past-prayer');
                 } else if (!nextPrayerFound){
-                   div.classList.add('next-prayer');
+                    div.classList.add('next-prayer');
                     nextPrayerFound = true;
                     nextPrayerName = prayer;
-                    nextPrayerTime = formattedTime;
-                }
-                 else {
+                    nextPrayerTime = formattedTime; // store time
+                } else {
                     div.classList.add('next-prayer');
-
                 }
 
                 prayerTimesDiv.appendChild(div);
             }
 
-               // Display the prayer status
+            // Update Prayer Status and Time Remaining
             if (nextPrayerName) {
-                document.getElementById('prayer-status').textContent = `اذان ${nextPrayerName} نزدیکه!`; // Simplified Message
-                const timeLeft = calculateTimeLeft(nextPrayerTime);
-                document.getElementById('time-left').textContent = `زمان باقی مانده: ${timeLeft}`;
+                const timeLeft = calculateTimeRemaining(nextPrayerTime);
+                document.getElementById('prayer-status').textContent = `وقت ${nextPrayerName} نزدیکه!`;
+                document.getElementById('time-to-next').textContent = `(${timeLeft.hours} ساعت و ${timeLeft.minutes} دقیقه)`;
             } else {
                 document.getElementById('prayer-status').textContent = "همه اذان‌ها خونده شد!";
-                document.getElementById('time-left').textContent = ""; // Clear the time left if no next prayer
+                document.getElementById('time-to-next').textContent = ""; // Clear the time if no next prayer
             }
+
         })
         .catch(error => {
             console.error('Error fetching prayer times:', error);
