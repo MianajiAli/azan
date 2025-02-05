@@ -6,13 +6,14 @@
     <title>اوقات شرعی</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@100..900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;700&display=swap" rel="stylesheet">
     <link rel="manifest" href="manifest.json">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-title" content="اوقات شرعی">
     <link rel="apple-touch-icon" href="icon.png">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <style>
+        /* Base Styles */
         body {
             font-family: 'Vazirmatn', sans-serif;
             display: flex;
@@ -23,13 +24,14 @@
             margin: 0;
             background-color: #f0f0f0;
             padding: 20px;
+            line-height: 1.6;
         }
 
         #prayer-times-container {
-            background-color: white;
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            background-color: #fff;
+            padding: 40px; /* Increased padding */
+            border-radius: 15px; /* More rounded corners */
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2); /* Stronger shadow */
             text-align: center;
             width: 100%;
             max-width: 800px;
@@ -37,71 +39,73 @@
         }
 
         h1 {
-            font-size: 3em;
-            margin-bottom: 20px;
-            color: #333;
+            font-size: 4em;
+            margin-bottom: 25px;
+            color: #222;
+            font-weight: 700;
         }
 
         #date-display, #time-display {
-            font-size: 2em;
-            margin-bottom: 10px;
-            color: #555;
+            font-size: 2.5em;
+            margin-bottom: 15px;
+            color: #333;
         }
 
         .prayer-time {
-            font-size: 2.5em;
-            margin-bottom: 10px;
-            padding: 15px;
-            border-radius: 8px;
+            font-size: 3em;
+            margin-bottom: 15px;
+            padding: 20px;
+            border-radius: 12px;
             word-break: break-word;
-
-            /* Justify Content */
             display: flex;
-            justify-content: space-between; /* Distribute space evenly */
-            align-items: center;           /* Vertically center the content */
+            justify-content: space-between;
+            align-items: center;
         }
 
         .prayer-name {
-            font-weight: bold;
-            color: #007bff;
+            font-weight: 700; /* Bolder text */
+            color: #0056b3; /* Darker Blue */
         }
 
-        /* Color coding based on time */
+        /* Accessible Color Palette */
         .past-prayer {
-            background-color: #f9f9f9;
-            color: #aaa;
+            background-color: #f0f0f0;
+            color: #777;  /* Higher contrast for gray */
         }
 
         .next-prayer {
-            background-color: #e6f7ff;
-            color: #333;
+            background-color: #d0ebff; /* Soft, accessible blue */
+            color: #111;
         }
 
         .current-prayer {
-            background-color: #ffefc6;
-            color: #333;
+            background-color: #ffe599; /* Accessible yellow */
+            color: #111;
             font-weight: bold;
         }
 
+        /* Larger loading indicator */
+        #loading-indicator {
+          text-align: center;
+          font-size: 2em;
+          color: #666;
+          margin-top: 30px;
+        }
+
+        /* Responsiveness */
         @media (max-width: 600px) {
             h1 {
-                font-size: 2.5em;
+                font-size: 3em;
             }
 
             #date-display, #time-display {
-                font-size: 1.5em;
+                font-size: 2em;
             }
 
             .prayer-time {
-                font-size: 2em;
+                font-size: 2.5em;
+                padding: 15px;
             }
-        }
-
-        #loading-indicator {
-          text-align: center;
-          font-size: 1.5em;
-          color: #888;
-          margin-top: 20px;
         }
     </style>
 </head>
