@@ -7,16 +7,11 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@100..900&display=swap" rel="stylesheet">
-
-    <!-- PWA Manifest -->
     <link rel="manifest" href="manifest.json">
-
-    <!-- iOS Meta Tags for PWA -->
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-title" content="اوقات شرعی">  <!-- App Name -->
-    <link rel="apple-touch-icon" href="icon.png">  <!-- Replace with your icon file -->
-    <meta name="apple-mobile-web-app-status-bar-style" content="default">  <!-- Style of the status bar -->
-
+    <meta name="apple-mobile-web-app-title" content="اوقات شرعی">
+    <link rel="apple-touch-icon" href="icon.png">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <style>
         body {
             font-family: 'Vazirmatn', sans-serif;
@@ -27,7 +22,7 @@
             min-height: 100vh;
             margin: 0;
             background-color: #f0f0f0;
-            padding: 20px; /* Add some padding to the body */
+            padding: 20px;
         }
 
         #prayer-times-container {
@@ -36,9 +31,9 @@
             border-radius: 12px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
             text-align: center;
-            width: 100%; /* Full width on mobile */
-            max-width: 800px; /* Limit width on larger screens */
-            box-sizing: border-box; /* Include padding in width */
+            width: 100%;
+            max-width: 800px;
+            box-sizing: border-box;
         }
 
         h1 {
@@ -47,17 +42,18 @@
             color: #333;
         }
 
-        #date-display {
+        #date-display, #time-display {
             font-size: 2em;
-            margin-bottom: 20px;
+            margin-bottom: 10px;
             color: #555;
         }
 
         .prayer-time {
             font-size: 2.5em;
             margin-bottom: 10px;
-            color: #555;
-            word-break: break-word; /* Prevent long words from overflowing */
+            padding: 15px;  /* Added padding for more visual separation */
+            border-radius: 8px; /* Added border-radius for rounded corners */
+            word-break: break-word;
         }
 
         .prayer-name {
@@ -66,13 +62,29 @@
             color: #007bff;
         }
 
-        /* Responsive adjustments */
+        /* Color coding based on time */
+        .past-prayer {
+            background-color: #f9f9f9; /* Light grey */
+            color: #aaa; /* Dimmed text */
+        }
+
+        .next-prayer {
+            background-color: #e6f7ff; /* Light blue */
+            color: #333;
+        }
+
+        .current-prayer {
+            background-color: #ffefc6; /* light yellow*/
+            color: #333;
+            font-weight: bold;
+        }
+
         @media (max-width: 600px) {
             h1 {
                 font-size: 2.5em;
             }
 
-            #date-display {
+            #date-display, #time-display {
                 font-size: 1.5em;
             }
 
@@ -81,7 +93,6 @@
             }
         }
 
-        /* Add a loading indicator */
         #loading-indicator {
           text-align: center;
           font-size: 1.5em;
@@ -93,11 +104,12 @@
 <body>
 
 <div id="prayer-times-container">
-    <h1>اوقات شرعی میانه</h1>
+    <h1>اوقات شرعی</h1>
     <div id="date-display"></div>
+    <div id="time-display"></div>
 
     <div id="prayer-times">
-      <div id="loading-indicator">در حال بارگذاری...</div> <!-- Loading indicator -->
+      <div id="loading-indicator">در حال بارگذاری...</div>
     </div>
 </div>
 
@@ -109,18 +121,26 @@
         return date.toLocaleDateString('fa-IR', options);
     }
 
-    const today = new Date();
-    document.getElementById('date-display').textContent = formatDate(today);
-
     function formatTime(timeString) {
         const [hours, minutes] = timeString.split(':');
         return `${hours}:${minutes}`;
     }
 
+    function updateClock() {
+        const now = new Date();
+        const hours = String(now.getHours()).padStart(2, '0');
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+        document.getElementById('time-display').textContent = `${hours}:${minutes}`;
+    }
+
+    const today = new Date();
+    document.getElementById('date-display').textContent = formatDate(today);
+    updateClock();  // Initialize clock
+    setInterval(updateClock, 60000); // Update every minute
+
     fetch(apiUrl)
         .then(response => response.json())
         .then(data => {
-            // Remove loading indicator on successful data fetch
             document.getElementById('loading-indicator').style.display = 'none';
 
             const prayerTimes = {
@@ -133,20 +153,41 @@
             };
 
             const prayerTimesDiv = document.getElementById('prayer-times');
-            prayerTimesDiv.innerHTML = ''; // Clear the loading indicator
+            prayerTimesDiv.innerHTML = '';
+
+            const now = new Date();
+            const nowTime = now.getHours() * 60 + now.getMinutes(); // Current time in minutes since midnight
+             let nextPrayerFound = false; //flag to find next prayer
 
             for (const prayer in prayerTimes) {
                 const div = document.createElement('div');
                 div.className = 'prayer-time';
                 const formattedTime = formatTime(prayerTimes[prayer]);
                 div.innerHTML = `<span class="prayer-name">${prayer}:</span> ${formattedTime}`;
+
+                const [prayerHours, prayerMinutes] = prayerTimes[prayer].split(':').map(Number);
+                const prayerTimeInMinutes = prayerHours * 60 + prayerMinutes;
+
+
+                if (prayerTimeInMinutes < nowTime) {
+                    div.classList.add('past-prayer');
+                } else if (!nextPrayerFound){
+                    div.classList.add('next-prayer');
+                     nextPrayerFound = true;
+                }
+                 else {
+                    div.classList.add('next-prayer');
+
+                }
+
+
                 prayerTimesDiv.appendChild(div);
             }
         })
         .catch(error => {
             console.error('Error fetching prayer times:', error);
-            document.getElementById('prayer-times').innerHTML = "<p>خطا در دریافت اوقات شرعی.</p>"; // Persian error message
-            document.getElementById('loading-indicator').style.display = 'none'; // Hide loading indicator on error
+            document.getElementById('prayer-times').innerHTML = "<p>خطا در دریافت اوقات شرعی.</p>";
+            document.getElementById('loading-indicator').style.display = 'none';
         });
 </script>
 
