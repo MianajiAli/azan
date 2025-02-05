@@ -78,6 +78,11 @@
             color: #111;
         }
 
+          .next-prayer::before {
+              content: "اذان بعدی 👈"; /* Added indicator for the next prayer */
+              margin-left: 10px;
+          }
+
         .current-prayer {
             background-color: #ffe599;
             color: #111;
@@ -139,11 +144,11 @@
         const now = new Date();
         const hours = String(now.getHours()).padStart(2, '0');
         const minutes = String(now.getMinutes()).padStart(2, '0');
-        document.getElementById('time-display').textContent = `${hours}:${minutes}`;
+        document.getElementById('time-display').textContent = `ساعت: ${hours}:${minutes}`; // Added "ساعت:"
     }
 
     const today = new Date();
-    document.getElementById('date-display').textContent = formatDate(today);
+    document.getElementById('date-display').textContent = `تاریخ: ${formatDate(today)}`;  // Added "تاریخ:"
     updateClock();
     setInterval(updateClock, 60000);
 
@@ -167,6 +172,7 @@
             const now = new Date();
             const nowTime = now.getHours() * 60 + now.getMinutes();
              let nextPrayerName = null; // Store the name of the next prayer
+             let nextPrayerTime = null;
              let nextPrayerFound = false; // Store flag if next prayer is found
 
             for (const prayer in prayerTimes) {
@@ -184,6 +190,7 @@
                    div.classList.add('next-prayer');
                      nextPrayerFound = true;
                      nextPrayerName = prayer;  // Save the name of the next prayer
+                     nextPrayerTime = formattedTime;
                 }
                  else {
                     div.classList.add('next-prayer');
@@ -195,9 +202,9 @@
 
               // Display the prayer status
             if (nextPrayerName) {
-                document.getElementById('prayer-status').textContent = `الان باید برای ${nextPrayerName} آماده بشید.`; // Display next prayer
+                document.getElementById('prayer-status').textContent = `تا ${nextPrayerName} (${nextPrayerTime}) دیگه چیزی نمونده!`; // Display next prayer
             } else {
-                document.getElementById('prayer-status').textContent = "همه اذان‌ها خوانده شده. شب خوش!"; // All prayers have passed
+                document.getElementById('prayer-status').textContent = "وقت خوابه! همه اذان‌ها رو خوندیم."; // All prayers have passed
             }
 
 
