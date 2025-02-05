@@ -207,10 +207,10 @@
             let [hours, minutes] = timeString.split(':');
             hours = parseInt(hours); // Convert to number
 
-            const ampm = hours >= 12 ? 'ب.ظ' : 'ق.ظ';
+            const ampm = hours >= 12 ? 'بعد' : 'قبل';
             hours = hours % 12;
             hours = hours ? hours : 12; // the hour '0' should be '12'
-            return `${hours}:${minutes} ${ampm}`;
+            return `${ampm} ${hours}:${minutes} `;
         }
 
         function calculateTimeRemaining(targetTime) {
