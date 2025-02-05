@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fa" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -13,45 +13,55 @@
             justify-content: center;
             min-height: 100vh;
             margin: 0;
-            background-color: #f0f0f0; /* Light background color */
+            background-color: #f0f0f0;
         }
 
         #prayer-times-container {
             background-color: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Subtle shadow */
-            text-align: center; /* Center the text */
-            max-width: 600px; /* Limit container width on larger screens */
-            width: 90%; /* Occupy most of the screen width on smaller screens */
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            max-width: 800px;
+            width: 95%;
         }
 
         h1 {
-            font-size: 2em; /* Large heading */
-            margin-bottom: 10px;
-            color: #333; /* Darker heading color */
+            font-size: 3em;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        #date-display {
+            font-size: 2em;
+            margin-bottom: 20px;
+            color: #555;
         }
 
         .prayer-time {
-            font-size: 1.5em; /* Larger time font */
-            margin-bottom: 5px;
-            color: #555; /* Slightly darker text color */
+            font-size: 2.5em; /* Increased font size */
+            margin-bottom: 10px;
+            color: #555;
         }
 
         .prayer-name {
             font-weight: bold;
-            margin-right: 5px;
-            color: #007bff; /* Blue color for prayer names */
+            margin-right: 10px;
+            color: #007bff;
         }
 
         /* Responsive adjustments */
-        @media (max-width: 400px) { /* Adjust font sizes for smaller screens */
+        @media (max-width: 600px) {
             h1 {
+                font-size: 2.5em;
+            }
+
+            #date-display {
                 font-size: 1.5em;
             }
 
             .prayer-time {
-                font-size: 1.2em;
+                font-size: 2em;
             }
         }
     </style>
@@ -60,6 +70,7 @@
 
 <div id="prayer-times-container">
     <h1>اوقات شرعی</h1>
+    <div id="date-display"></div>
 
     <div id="prayer-times">
     </div>
@@ -68,16 +79,25 @@
 <script>
     const apiUrl = 'https://prayer.aviny.com/api/prayertimes/453';
 
+    function formatDate(date) {
+        const options = { year: 'numeric', month: 'long', day: 'numeric' };
+        return date.toLocaleDateString('fa-IR', options); // Format date in Persian
+    }
+
+    // Display today's date immediately
+    const today = new Date();
+    document.getElementById('date-display').textContent = formatDate(today);
+
     fetch(apiUrl)
-        .then(response => response.json()) // Get response as JSON
+        .then(response => response.json())
         .then(data => {
             const prayerTimes = {
-                Imsaak: data.Imsaak,
-                Sunrise: data.Sunrise,
-                Noon: data.Noon,
-                Sunset: data.Sunset,
-                Maghreb: data.Maghreb,
-                Midnight: data.Midnight,
+                "اذان صبح": data.Imsaak,  // Changed to Persian names
+                "طلوع آفتاب": data.Sunrise,
+                "اذان ظهر": data.Noon,
+                "غروب آفتاب": data.Sunset,
+                "اذان مغرب": data.Maghreb,
+                "نیمه شب": data.Midnight,
             };
 
             const prayerTimesDiv = document.getElementById('prayer-times');
@@ -91,7 +111,7 @@
         })
         .catch(error => {
             console.error('Error fetching prayer times:', error);
-            document.getElementById('prayer-times').innerHTML = "<p>Error fetching prayer times.</p>";
+            document.getElementById('prayer-times').innerHTML = "<p>خطا در دریافت اوقات شرعی.</p>"; // Persian error message
         });
 </script>
 
