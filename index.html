@@ -40,9 +40,15 @@
 
         h1 {
             font-size: 4em;
-            margin-bottom: 25px;
+            margin-bottom: 10px;
             color: #222;
             font-weight: 700;
+        }
+
+        #city-display {
+            font-size: 2.7em;
+            margin-bottom: 5px;
+            color: #444;
         }
 
         #date-display, #time-display, #prayer-status {
@@ -64,24 +70,25 @@
 
         .prayer-name {
             font-weight: 700;
-            color: #0056b3;
+            color: #2962ff; /* A slightly brighter, more accessible blue */
         }
 
         /* Accessible Color Palette */
         .past-prayer {
-            background-color: #f0f0f0;
-            color: #777;
+            background-color: #e0e0e0; /* Softer gray */
+            color: #555;          /* More readable dark gray */
         }
 
         .next-prayer {
-            background-color: #d0ebff;
-            color: #111;
+            background-color: #bbdefb; /* Lighter blue */
+            color: #000; /* Use black for contrast */
+            font-weight: bold;       /* Emphasize the next prayer */
         }
 
         .current-prayer {
-            background-color: #ffe599;
-            color: #111;
-            font-weight: bold;
+            background-color: #ffcc80; /* Soft orange */
+            color: #000;          /* Black for contrast */
+            font-weight: bolder;
         }
 
         /* Larger loading indicator */
@@ -98,7 +105,7 @@
                 font-size: 3em;
             }
 
-            #date-display, #time-display, #prayer-status {
+            #city-display, #date-display, #time-display, #prayer-status {
                 font-size: 2em;
             }
 
@@ -113,9 +120,10 @@
 
 <div id="prayer-times-container">
     <h1>اوقات شرعی</h1>
+    <div id="city-display"></div>  <!-- City Name Display -->
     <div id="date-display"></div>
     <div id="time-display"></div>
-    <div id="prayer-status"></div>  <!-- Added element for the prayer status -->
+    <div id="prayer-status"></div>
 
     <div id="prayer-times">
       <div id="loading-indicator">در حال بارگذاری...</div>
@@ -139,11 +147,11 @@
         const now = new Date();
         const hours = String(now.getHours()).padStart(2, '0');
         const minutes = String(now.getMinutes()).padStart(2, '0');
-        document.getElementById('time-display').textContent = `${hours}:${minutes}`;
+        document.getElementById('time-display').textContent = `ساعت: ${hours}:${minutes}`;
     }
 
     const today = new Date();
-    document.getElementById('date-display').textContent = formatDate(today);
+    document.getElementById('date-display').textContent = `تاریخ: ${formatDate(today)}`;
     updateClock();
     setInterval(updateClock, 60000);
 
@@ -151,6 +159,10 @@
         .then(response => response.json())
         .then(data => {
             document.getElementById('loading-indicator').style.display = 'none';
+
+             // Display city name
+            document.getElementById('city-display').textContent = `شهر: ${data.CityName}`;
+
 
             const prayerTimes = {
                 "اذان صبح": data.Imsaak,
@@ -166,8 +178,8 @@
 
             const now = new Date();
             const nowTime = now.getHours() * 60 + now.getMinutes();
-             let nextPrayerName = null; // Store the name of the next prayer
-             let nextPrayerFound = false; // Store flag if next prayer is found
+            let nextPrayerName = null;
+            let nextPrayerFound = false;
 
             for (const prayer in prayerTimes) {
                 const div = document.createElement('div');
@@ -182,8 +194,8 @@
                     div.classList.add('past-prayer');
                 } else if (!nextPrayerFound){
                    div.classList.add('next-prayer');
-                     nextPrayerFound = true;
-                     nextPrayerName = prayer;  // Save the name of the next prayer
+                    nextPrayerFound = true;
+                    nextPrayerName = prayer;
                 }
                  else {
                     div.classList.add('next-prayer');
@@ -195,12 +207,10 @@
 
               // Display the prayer status
             if (nextPrayerName) {
-                document.getElementById('prayer-status').textContent = `الان باید برای ${nextPrayerName} آماده بشید.`; // Display next prayer
+                document.getElementById('prayer-status').textContent = `وقت ${nextPrayerName} نزدیکه!`; // Simplified Message
             } else {
-                document.getElementById('prayer-status').textContent = "همه اذان‌ها خوانده شده. شب خوش!"; // All prayers have passed
+                document.getElementById('prayer-status').textContent = "همه اذان‌ها خونده شد!";  // Simplified Message
             }
-
-
         })
         .catch(error => {
             console.error('Error fetching prayer times:', error);
