@@ -231,84 +231,91 @@
             document.getElementById('time-display').textContent = `ساعت: ${hours}:${minutes}`;
         }
 
-        const today = new Date();
-        document.getElementById('date-display').textContent = `تاریخ: ${formatDate(today)}`;
+        function updatePrayerTimes() {
+            fetch(apiUrl)
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('loading-indicator').style.display = 'none';
+                    document.getElementById('city-display').textContent = `شهر: ${data.CityName}`;
+                    document.getElementById('date-display').textContent = `تاریخ: ${formatDate(new Date())}`; //Update date here
+
+                    const prayerTimes = {
+                        "اذان صبح": data.Imsaak,
+                        "طلوع آفتاب": data.Sunrise,
+                        "اذان ظهر": data.Noon,
+                        "غروب آفتاب": data.Sunset,
+                        "اذان مغرب": data.Maghreb,
+                        "نیمه شب": data.Midnight,
+                    };
+
+                    const prayerTimesDiv = document.getElementById('prayer-times');
+                    prayerTimesDiv.innerHTML = '';
+
+                    const now = new Date();
+                    const nowTime = now.getHours() * 60 + now.getMinutes();
+                    let nextPrayerName = null;
+                    let nextPrayerTime = null;
+                    let nextPrayerFound = false;
+
+                    for (const prayer in prayerTimes) {
+                        const div = document.createElement('div');
+                        div.className = 'prayer-time';
+                        const formattedTime = formatTime(prayerTimes[prayer]);
+                        div.innerHTML = `<span class="prayer-name">${prayer}</span><span>${formattedTime}</span>`;
+
+                        const [prayerHours, prayerMinutes] = prayerTimes[prayer].split(':').map(Number);
+                        const prayerTimeInMinutes = prayerHours * 60 + prayerMinutes;
+
+                        if (prayerTimeInMinutes < nowTime) {
+                            div.classList.add('past-prayer');
+                        } else if (!nextPrayerFound) {
+                            div.classList.add('next-prayer');
+                            nextPrayerFound = true;
+                            nextPrayerName = prayer;
+                            nextPrayerTime = formattedTime;
+                        } else {
+                            div.classList.add('next-prayer');
+                        }
+
+                        prayerTimesDiv.appendChild(div);
+                    }
+
+                    // Update Prayer Status and Time Remaining
+                    if (nextPrayerName) {
+                        const timeLeft = calculateTimeRemaining(nextPrayerTime);
+                        const totalMinutesLeft = (timeLeft.hours * 60) + timeLeft.minutes; // Calculate total minutes remaining
+
+
+
+                        if (totalMinutesLeft <= 15) {
+
+                            document.getElementById('time-to-next').textContent = ``;
+                            document.getElementById('prayer-status').textContent = `تا ${nextPrayerName} فقط ${timeLeft.minutes} دقیقه مانده! آماده شوید!`; // "Only X minutes left until prayer, get ready!"
+                        } else {
+                            document.getElementById('time-to-next').textContent = `تا ${nextPrayerName} ${timeLeft.hours} ساعت و ${timeLeft.minutes} دقیقه باقی مانده!`;
+                        }
+
+                    } else {
+                        document.getElementById('prayer-status').textContent = "همه اذان‌ها خونده شد!";
+                        document.getElementById('time-to-next').textContent = "";
+                    }
+
+                })
+                .catch(error => {
+                    console.error('Error fetching prayer times:', error);
+                    document.getElementById('prayer-times').innerHTML = "<p>خطا در دریافت اوقات شرعی.</p>";
+                    document.getElementById('loading-indicator').style.display = 'none';
+                });
+        }
+
+        // Initial Load and Setup
         updateClock();
-        setInterval(updateClock, 60000);
+        updatePrayerTimes(); // Initial load
 
-        fetch(apiUrl)
-            .then(response => response.json())
-            .then(data => {
-                document.getElementById('loading-indicator').style.display = 'none';
-                document.getElementById('city-display').textContent = `شهر: ${data.CityName}`;
+        // Set up intervals for automatic updates
+        setInterval(updateClock, 60000);       // Update clock every minute
+        setInterval(updatePrayerTimes, 600000);  // Update prayer times every 10 minutes (adjust as needed)
 
-                const prayerTimes = {
-                    "اذان صبح": data.Imsaak,
-                    "طلوع آفتاب": data.Sunrise,
-                    "اذان ظهر": data.Noon,
-                    "غروب آفتاب": data.Sunset,
-                    "اذان مغرب": data.Maghreb,
-                    "نیمه شب": data.Midnight,
-                };
-
-                const prayerTimesDiv = document.getElementById('prayer-times');
-                prayerTimesDiv.innerHTML = '';
-
-                const now = new Date();
-                const nowTime = now.getHours() * 60 + now.getMinutes();
-                let nextPrayerName = null;
-                let nextPrayerTime = null;
-                let nextPrayerFound = false;
-
-                for (const prayer in prayerTimes) {
-                    const div = document.createElement('div');
-                    div.className = 'prayer-time';
-                    const formattedTime = formatTime(prayerTimes[prayer]);
-                    div.innerHTML = `<span class="prayer-name">${prayer}</span><span>${formattedTime}</span>`;
-
-                    const [prayerHours, prayerMinutes] = prayerTimes[prayer].split(':').map(Number);
-                    const prayerTimeInMinutes = prayerHours * 60 + prayerMinutes;
-
-                    if (prayerTimeInMinutes < nowTime) {
-                        div.classList.add('past-prayer');
-                    } else if (!nextPrayerFound) {
-                        div.classList.add('next-prayer');
-                        nextPrayerFound = true;
-                        nextPrayerName = prayer;
-                        nextPrayerTime = formattedTime;
-                    } else {
-                        div.classList.add('next-prayer');
-                    }
-
-                    prayerTimesDiv.appendChild(div);
-                }
-
-                // Update Prayer Status and Time Remaining
-                if (nextPrayerName) {
-                    const timeLeft = calculateTimeRemaining(nextPrayerTime);
-                    const totalMinutesLeft = (timeLeft.hours * 60) + timeLeft.minutes; // Calculate total minutes remaining
-
-
-
-                    if (totalMinutesLeft <= 15) {
-
-                        document.getElementById('time-to-next').textContent = ``;
-                        document.getElementById('prayer-status').textContent = `تا ${nextPrayerName} فقط ${timeLeft.minutes} دقیقه مانده! آماده شوید!`; // "Only X minutes left until prayer, get ready!"
-                    } else {
-                        document.getElementById('time-to-next').textContent = `تا ${nextPrayerName} ${timeLeft.hours} ساعت و ${timeLeft.minutes} دقیقه باقی مانده!`;
-                    }
-
-                } else {
-                    document.getElementById('prayer-status').textContent = "همه اذان‌ها خونده شد!";
-                    document.getElementById('time-to-next').textContent = "";
-                }
-
-            })
-            .catch(error => {
-                console.error('Error fetching prayer times:', error);
-                document.getElementById('prayer-times').innerHTML = "<p>خطا در دریافت اوقات شرعی.</p>";
-                document.getElementById('loading-indicator').style.display = 'none';
-            });
     </script>
 
 </body>
