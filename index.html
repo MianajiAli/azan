@@ -70,24 +70,24 @@
 
         .prayer-name {
             font-weight: 700;
-            color: #2962ff; /* A slightly brighter, more accessible blue */
+            color: #555;  /* Gray or Black */
         }
 
         /* Accessible Color Palette */
         .past-prayer {
-            background-color: #e0e0e0; /* Softer gray */
-            color: #555;          /* More readable dark gray */
+            background-color: #e0e0e0;
+            color: #555;
         }
 
         .next-prayer {
-            background-color: #bbdefb; /* Lighter blue */
-            color: #000; /* Use black for contrast */
-            font-weight: bold;       /* Emphasize the next prayer */
+            background-color: #bbdefb;
+            color: #000;
+            font-weight: bold;
         }
 
         .current-prayer {
-            background-color: #ffcc80; /* Soft orange */
-            color: #000;          /* Black for contrast */
+            background-color: #ffcc80;
+            color: #000;
             font-weight: bolder;
         }
 
@@ -120,7 +120,7 @@
 
 <div id="prayer-times-container">
     <h1>اوقات شرعی</h1>
-    <div id="city-display"></div>  <!-- City Name Display -->
+    <div id="city-display"></div>
     <div id="date-display"></div>
     <div id="time-display"></div>
     <div id="prayer-status"></div>
@@ -143,7 +143,7 @@
         return `${hours}:${minutes}`;
     }
 
-    function updateClock() {
+   function updateClock() {
         const now = new Date();
         const hours = String(now.getHours()).padStart(2, '0');
         const minutes = String(now.getMinutes()).padStart(2, '0');
@@ -159,10 +159,7 @@
         .then(response => response.json())
         .then(data => {
             document.getElementById('loading-indicator').style.display = 'none';
-
-             // Display city name
             document.getElementById('city-display').textContent = `شهر: ${data.CityName}`;
-
 
             const prayerTimes = {
                 "اذان صبح": data.Imsaak,
@@ -179,6 +176,7 @@
             const now = new Date();
             const nowTime = now.getHours() * 60 + now.getMinutes();
             let nextPrayerName = null;
+            let nextPrayerTime = null; // Store the actual time of the next prayer
             let nextPrayerFound = false;
 
             for (const prayer in prayerTimes) {
@@ -196,21 +194,36 @@
                    div.classList.add('next-prayer');
                     nextPrayerFound = true;
                     nextPrayerName = prayer;
+                    nextPrayerTime = { hours: prayerHours, minutes: prayerMinutes }; // Store the prayer time
                 }
                  else {
                     div.classList.add('next-prayer');
-
                 }
 
                 prayerTimesDiv.appendChild(div);
             }
 
-              // Display the prayer status
+            // Calculate time left to next prayer
+             let timeLeftMessage = "";
             if (nextPrayerName) {
-                document.getElementById('prayer-status').textContent = `وقت ${nextPrayerName} نزدیکه!`; // Simplified Message
+                const now = new Date();
+                let hoursLeft = nextPrayerTime.hours - now.getHours();
+                let minutesLeft = nextPrayerTime.minutes - now.getMinutes();
+
+                if (minutesLeft < 0) {
+                    minutesLeft += 60;
+                    hoursLeft--;
+                }
+                 if (hoursLeft < 0){
+                        hoursLeft+=24;
+                    }
+                 timeLeftMessage = `تقریباً ${hoursLeft} ساعت و ${minutesLeft} دقیقه تا ${nextPrayerName} مانده.`;
+                document.getElementById('prayer-status').textContent =  timeLeftMessage // added next time to prayer status
+
             } else {
-                document.getElementById('prayer-status').textContent = "همه اذان‌ها خونده شد!";  // Simplified Message
+                document.getElementById('prayer-status').textContent = "همه اذان‌ها خونده شد!";
             }
+
         })
         .catch(error => {
             console.error('Error fetching prayer times:', error);
