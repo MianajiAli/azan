@@ -25,11 +25,12 @@
             background-color: #f0f0f0;
             padding: 20px;
             line-height: 1.6;
+            box-sizing: border-box; /* Important for consistent layout */
         }
 
         #prayer-times-container {
             background-color: #fff;
-            padding: 40px;
+            padding: 30px; /* Reduced padding for small screens */
             border-radius: 15px;
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
             text-align: center;
@@ -39,45 +40,46 @@
         }
 
         h1 {
-            font-size: 4em;
+            font-size: 3em; /* Reduced h1 size */
             margin-bottom: 10px;
             color: #222;
             font-weight: 700;
         }
 
         #city-display {
-            font-size: 2.7em;
+            font-size: 2.2em; /* Reduced city size */
             margin-bottom: 5px;
             color: #444;
         }
 
         #date-display, #time-display {
-            font-size: 2.5em;
-            margin-bottom: 15px;
+            font-size: 2em; /* Reduced sizes */
+            margin-bottom: 10px;
             color: #333;
         }
 
         #prayer-status-container {
-            font-size: 2.5em;
-            margin-bottom: 15px;
+            font-size: 1.8em; /* Reduced size */
+            margin-bottom: 10px;
             color: #333;
             display: flex;
-            align-items: center; /* Vertically align status and timer */
+            align-items: center;
             justify-content: center;
+            flex-direction: column; /* Stack the elements vertically on small screens */
         }
 
         #prayer-status {
-            margin-left: 10px;
+            margin-left: 0; /* Remove the left margin */
         }
 
         #time-to-next {
-            margin-right: 10px; /* Space between text and number */
+            margin-right: 0; /* Remove right margin */
         }
 
         .prayer-time {
-            font-size: 3em;
-            margin-bottom: 15px;
-            padding: 20px;
+            font-size: 2.3em; /* Reduced prayer time size */
+            margin-bottom: 10px;
+            padding: 15px; /* Reduced padding */
             border-radius: 12px;
             word-break: break-word;
             display: flex;
@@ -87,13 +89,13 @@
 
         .prayer-name {
             font-weight: 700;
-            color: #555; /* Made prayer name gray */
+            color: #555;
         }
 
         /* Specific margin-bottom adjustments */
-        .prayer-time:nth-child(2),  /* طلوع آفتاب */
-        .prayer-time:nth-child(5)   /* غروب آفتاب */ {
-            margin-bottom: 30px;  /* Increased margin */
+        .prayer-time:nth-child(2),
+        .prayer-time:nth-child(5) {
+            margin-bottom: 20px;
         }
 
         /* Accessible Color Palette */
@@ -117,24 +119,37 @@
         /* Larger loading indicator */
         #loading-indicator {
           text-align: center;
-          font-size: 2em;
+          font-size: 1.7em; /* Reduced loading size */
           color: #666;
-          margin-top: 30px;
+          margin-top: 20px;
         }
 
-        /* Responsiveness */
-        @media (max-width: 600px) {
+        /* Responsiveness for SMALL phones */
+        @media (max-width: 400px) { /* Even smaller screens */
+            body {
+                padding: 10px; /* Further reduced padding */
+            }
+
+            #prayer-times-container {
+                padding: 20px; /* Further reduced padding */
+            }
+
             h1 {
-                font-size: 3em;
+                font-size: 2.5em;
             }
 
             #city-display, #date-display, #time-display, #prayer-status-container {
-                font-size: 2em;
+                font-size: 1.7em;
             }
 
             .prayer-time {
-                font-size: 2.5em;
-                padding: 15px;
+                font-size: 2em;
+                padding: 10px;
+                margin-bottom: 8px; /* Tighter spacing */
+            }
+
+            #loading-indicator {
+                font-size: 1.5em;
             }
         }
     </style>
@@ -219,7 +234,7 @@
             const now = new Date();
             const nowTime = now.getHours() * 60 + now.getMinutes();
             let nextPrayerName = null;
-            let nextPrayerTime = null; // Store the time of the next prayer
+            let nextPrayerTime = null;
             let nextPrayerFound = false;
 
             for (const prayer in prayerTimes) {
@@ -237,7 +252,7 @@
                     div.classList.add('next-prayer');
                     nextPrayerFound = true;
                     nextPrayerName = prayer;
-                    nextPrayerTime = formattedTime; // store time
+                    nextPrayerTime = formattedTime;
                 } else {
                     div.classList.add('next-prayer');
                 }
@@ -252,7 +267,7 @@
                 document.getElementById('time-to-next').textContent = `(${timeLeft.hours} ساعت و ${timeLeft.minutes} دقیقه)`;
             } else {
                 document.getElementById('prayer-status').textContent = "همه اذان‌ها خونده شد!";
-                document.getElementById('time-to-next').textContent = ""; // Clear the time if no next prayer
+                document.getElementById('time-to-next').textContent = "";
             }
 
         })
