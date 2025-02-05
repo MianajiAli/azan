@@ -207,7 +207,7 @@
             let [hours, minutes] = timeString.split(':');
             hours = parseInt(hours); // Convert to number
 
-            const ampm = hours >= 12 ? 'بعد' : 'قبل';
+            const ampm = hours >= 12 ? 'ب' : 'ق';
             hours = hours % 12;
             hours = hours ? hours : 12; // the hour '0' should be '12'
             return `${ampm} ${hours}:${minutes} `;
