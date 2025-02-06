@@ -186,7 +186,7 @@
         <div id="time-display"></div>
 
         <div id="prayer-status-container">
-            <span id="time-to-next"></span>
+<!--             <span id="time-to-next"></span> -->
             <span id="prayer-status"></span>
         </div>
 
@@ -247,93 +247,81 @@
             document.getElementById('time-display').textContent = `ساعت: ${hours}:${minutes} ${ampm}`;
         }
 
-    function calculateTimeRemaining(targetTime) {
-    let [hours, minutes] = targetTime.split(':').map(Number); // تبدیل مقدار به اعداد صحیح
-    
-    if (isNaN(hours) || isNaN(minutes)) {
-        console.error("Invalid prayer time format:", targetTime);
-        return { hours: 0, minutes: 0 };
-    }
-    
-    const now = new Date();
-    const target = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hours, minutes, 0);
-    
-    if (target < now) {
-        target.setDate(target.getDate() + 1);
-    }
-    
-    const diff = target.getTime() - now.getTime();
-    const hoursLeft = Math.floor(diff / (1000 * 60 * 60));
-    const minutesLeft = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-    
-    return { hours: hoursLeft, minutes: minutesLeft };
-}
+        function updatePrayerTimes() {
+            fetch(apiUrl)
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('loading-indicator').style.display = 'none';
+                    document.getElementById('city-display').textContent = `شهر: ${data.CityName}`;
+                    document.getElementById('date-display').textContent = `تاریخ: ${formatDate(new Date())}`; //Update date here
 
-function updatePrayerTimes() {
-    fetch(apiUrl)
-        .then(response => response.json())
-        .then(data => {
-            document.getElementById('loading-indicator').style.display = 'none';
-            document.getElementById('city-display').textContent = `شهر: ${data.CityName}`;
-            document.getElementById('date-display').textContent = `تاریخ: ${formatDate(new Date())}`;
+                    const prayerTimes = {
+                        "اذان صبح": data.Imsaak,
+                        "طلوع آفتاب": data.Sunrise,
+                        "اذان ظهر": data.Noon,
+                        "غروب آفتاب": data.Sunset,
+                        "اذان مغرب": data.Maghreb,
+                        "نیمه شب": data.Midnight,
+                    };
 
-            const prayerTimes = {
-                "اذان صبح": data.Imsaak,
-                "طلوع آفتاب": data.Sunrise,
-                "اذان ظهر": data.Noon,
-                "غروب آفتاب": data.Sunset,
-                "اذان مغرب": data.Maghreb,
-                "نیمه شب": data.Midnight,
-            };
+                    const prayerTimesDiv = document.getElementById('prayer-times');
+                    prayerTimesDiv.innerHTML = '';
 
-            const prayerTimesDiv = document.getElementById('prayer-times');
-            prayerTimesDiv.innerHTML = '';
+                    const now = new Date();
+                    const nowTime = now.getHours() * 60 + now.getMinutes();
+                    let nextPrayerName = null;
+                    let nextPrayerTime = null;
+                    let nextPrayerFound = false;
 
-            const now = new Date();
-            const nowTime = now.getHours() * 60 + now.getMinutes();
-            let nextPrayerName = null;
-            let nextPrayerTime = null;
-            let nextPrayerFound = false;
+                    for (const prayer in prayerTimes) {
+                        const div = document.createElement('div');
+                        div.className = 'prayer-time';
+                        const formattedTime = formatTime(prayerTimes[prayer]);
+                        div.innerHTML = `<span class="prayer-name">${prayer}</span><span>${formattedTime}</span>`;
 
-            for (const prayer in prayerTimes) {
-                const div = document.createElement('div');
-                div.className = 'prayer-time';
-                const formattedTime = prayerTimes[prayer]; // بدون AM/PM
-                div.innerHTML = `<span class="prayer-name">${prayer}</span><span>${formattedTime}</span>`;
+                        let [prayerHours, prayerMinutes] = prayerTimes[prayer].split(':').map(Number);
 
-                let [prayerHours, prayerMinutes] = formattedTime.split(':').map(Number);
-                const prayerTimeInMinutes = prayerHours * 60 + prayerMinutes;
+                        const prayerTimeInMinutes = prayerHours * 60 + prayerMinutes;
 
-                if (prayerTimeInMinutes < nowTime) {
-                    div.classList.add('past-prayer');
-                } else if (!nextPrayerFound) {
-                    div.classList.add('next-prayer');
-                    nextPrayerFound = true;
-                    nextPrayerName = prayer;
-                    nextPrayerTime = formattedTime;
-                }
+                        if (prayerTimeInMinutes < nowTime) {
+                            div.classList.add('past-prayer');
+                        } else if (!nextPrayerFound) {
+                            div.classList.add('next-prayer');
+                            nextPrayerFound = true;
+                            nextPrayerName = prayer;
+                            nextPrayerTime = formattedTime;
+                        } else {
+                            div.classList.add('next-prayer');
+                        }
 
-                prayerTimesDiv.appendChild(div);
-            }
+                        prayerTimesDiv.appendChild(div);
+                    }
 
-            if (nextPrayerName) {
-                const timeLeft = calculateTimeRemaining(nextPrayerTime);
-                if (timeLeft.hours === 0 && timeLeft.minutes <= 15) {
-                    document.getElementById('prayer-status').textContent = `تا ${nextPrayerName} فقط ${timeLeft.minutes} دقیقه مانده! آماده شوید!`;
-                } else {
-                    document.getElementById('time-to-next').textContent = `تا ${nextPrayerName} ${timeLeft.hours} ساعت و ${timeLeft.minutes} دقیقه باقی مانده!`;
-                }
-            } else {
-                document.getElementById('prayer-status').textContent = "همه اذان‌ها خوانده شد!";
-                document.getElementById('time-to-next').textContent = "";
-            }
-        })
-        .catch(error => {
-            console.error('Error fetching prayer times:', error);
-            document.getElementById('prayer-times').innerHTML = "<p>خطا در دریافت اوقات شرعی.</p>";
-            document.getElementById('loading-indicator').style.display = 'none';
-        });
-}
+                    // Update Prayer Status and Time Remaining
+                    if (nextPrayerName) {
+                        const timeLeft = calculateTimeRemaining(nextPrayerTime);
+                        const totalMinutesLeft = (timeLeft.hours * 60) + timeLeft.minutes; // Calculate total minutes remaining
+
+                        if (totalMinutesLeft <= 15) {
+
+                            document.getElementById('time-to-next').textContent = ``;
+                            document.getElementById('prayer-status').textContent = `تا ${nextPrayerName} فقط ${timeLeft.minutes} دقیقه مانده! آماده شوید!`; // "Only X minutes left until prayer, get ready!"
+                        } else {
+                            document.getElementById('time-to-next').textContent = `تا ${nextPrayerName} ${timeLeft.hours} ساعت و ${timeLeft.minutes} دقیقه باقی مانده!`;
+                        }
+
+                    } else {
+                        document.getElementById('prayer-status').textContent = "همه اذان‌ها خونده شد!";
+                        document.getElementById('time-to-next').textContent = "";
+                    }
+
+                })
+                .catch(error => {
+                    console.error('Error fetching prayer times:', error);
+                    document.getElementById('prayer-times').innerHTML = "<p>خطا در دریافت اوقات شرعی.</p>";
+                    document.getElementById('loading-indicator').style.display = 'none';
+                });
+        }
 
         // Initial Load and Setup
         updateClock();
