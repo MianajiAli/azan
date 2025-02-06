@@ -207,7 +207,7 @@
             let [hours, minutes] = timeString.split(':');
             hours = parseInt(hours); // Convert to number
 
-            const ampm = hours >= 12 ? 'ب' : 'ق';
+            const ampm = hours >= 12 ? 'ب.ظ' : 'ق.ظ';
             hours = hours % 12;
             hours = hours ? hours : 12; // the hour '0' should be '12'
             return `${ampm} ${hours}:${minutes} `;
@@ -216,13 +216,19 @@
         function calculateTimeRemaining(targetTime) {
             let [hours, minutes, ampm] = targetTime.split(/:| /); // Split by colon and space
             hours = parseInt(hours);
+            minutes = parseInt(minutes);
+
+            if (isNaN(hours) || isNaN(minutes)) {
+                console.error("Invalid targetTime format:", targetTime);
+                return { hours: NaN, minutes: NaN }; // Return NaN if parsing fails
+            }
 
             // Convert to 24-hour format for easier calculation
             if (ampm === "ب.ظ" && hours !== 12) hours += 12;
             if (ampm === "ق.ظ" && hours === 12) hours = 0; // Midnight
 
             const now = new Date();
-            const target = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hours, parseInt(minutes), 0); // Use parseInt for minutes
+            const target = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hours, minutes, 0);
 
             if (target < now) {
                 target.setDate(target.getDate() + 1); // Set to tomorrow if it's in the past
@@ -300,14 +306,21 @@
                     // Update Prayer Status and Time Remaining
                     if (nextPrayerName) {
                         const timeLeft = calculateTimeRemaining(nextPrayerTime);
-                        const totalMinutesLeft = (timeLeft.hours * 60) + timeLeft.minutes; // Calculate total minutes remaining
 
-                        if (totalMinutesLeft <= 15) {
-
-                            document.getElementById('time-to-next').textContent = ``;
-                            document.getElementById('prayer-status').textContent = `تا ${nextPrayerName} فقط ${timeLeft.minutes} دقیقه مانده! آماده شوید!`; // "Only X minutes left until prayer, get ready!"
+                        if (isNaN(timeLeft.hours) || isNaN(timeLeft.minutes)) {
+                            console.error("Invalid time calculation: ", timeLeft);
+                            document.getElementById('time-to-next').textContent = "مشکلی در محاسبه زمان باقی مانده!"; //"Problem calculating remaining time!"
                         } else {
-                            document.getElementById('time-to-next').textContent = `تا ${nextPrayerName} ${timeLeft.hours} ساعت و ${timeLeft.minutes} دقیقه باقی مانده!`;
+
+                            const totalMinutesLeft = (timeLeft.hours * 60) + timeLeft.minutes; // Calculate total minutes remaining
+
+                            if (totalMinutesLeft <= 15) {
+
+                                document.getElementById('time-to-next').textContent = ``;
+                                document.getElementById('prayer-status').textContent = `تا ${nextPrayerName} فقط ${timeLeft.minutes} دقیقه مانده! آماده شوید!`; // "Only X minutes left until prayer, get ready!"
+                            } else {
+                                document.getElementById('time-to-next').textContent = `تا ${nextPrayerName} ${timeLeft.hours} ساعت و ${timeLeft.minutes} دقیقه باقی مانده!`;
+                            }
                         }
 
                     } else {
@@ -330,7 +343,6 @@
         // Set up intervals for automatic updates
         setInterval(updateClock, 60000);       // Update clock every minute
         setInterval(updatePrayerTimes, 600000);  // Update prayer times every 10 minutes (adjust as needed)
-
     </script>
 
 </body>
