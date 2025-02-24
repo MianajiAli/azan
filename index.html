@@ -309,7 +309,7 @@
 
                         if (isNaN(timeLeft.hours) || isNaN(timeLeft.minutes)) {
                             console.error("Invalid time calculation: ", timeLeft);
-                            document.getElementById('time-to-next').textContent = "مشکلی در محاسبه زمان باقی مانده!"; //"Problem calculating remaining time!"
+                            document.getElementById('time-to-next').textContent = ""; //"Problem calculating remaining time!"
                         } else {
 
                             const totalMinutesLeft = (timeLeft.hours * 60) + timeLeft.minutes; // Calculate total minutes remaining
